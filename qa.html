@@ -97,7 +97,7 @@
               <span class="material-symbols-outlined text-[#0B1B3D] text-sm">gavel</span>
               <span class="text-xs font-bold text-[#0B1B3D] uppercase tracking-wider">Pocket Legal AI</span>
             </div>
-            <p class="text-[#121c28] text-sm leading-relaxed">
+            html<p class="text-[#121c28] text-sm leading-relaxed" id="welcome-text">
               Hello. I am your Nigerian legal assistant. Ask me anything about your contract, tenancy rights, employment law, or any legal document. I will give you a clear, direct answer grounded in Nigerian law.
             </p>
           </div>
@@ -146,12 +146,13 @@
   let conversationHistory = [];
 
   // Load contract context from localStorage if available
-  const savedResult = localStorage.getItem('pocketlegal_latest');
-  let contractContext = "";
-  if (savedResult) {
-    const parsed = JSON.parse(savedResult);
-    contractContext = `The user has already scanned a contract: "${parsed.document_title}". Summary: ${parsed.summary}. Overall risk score: ${parsed.overall_risk_score}/100.`;
-  }
+const savedResult = localStorage.getItem('pocketlegal_latest');
+let contractContext = "";
+if (savedResult) {
+  const parsed = JSON.parse(savedResult);
+  contractContext = `The user has already scanned a contract titled "${parsed.document_title}". Summary: ${parsed.summary}. Overall risk score: ${parsed.overall_risk_score}/100. Clauses found: ${JSON.stringify(parsed.clauses)}`;
+  document.getElementById('welcome-text').textContent = `I have loaded your scanned contract: "${parsed.document_title}" with a risk score of ${parsed.overall_risk_score}/100. Ask me anything about it.`;
+}
 
   function toggleLang(lang) {
     SELECTED_LANGUAGE.value = lang;

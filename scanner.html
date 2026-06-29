@@ -247,9 +247,8 @@
 
     const language = SELECTED_LANGUAGE.value;
     const languageInstruction = language === 'pidgin'
-      ? "Write all explanations in Nigerian Pidgin English (e.g. 'This clause no good for you because...')"
-      : "Write all explanations in clear, simple plain English.";
-
+  ? "You MUST write every single explanation in Nigerian Pidgin English. Do not use formal English at all. Write exactly how a Lagos street lawyer would explain it. Examples: 'This clause no good for you at all', 'Oga landlord no fit do this one', 'If you sign this, e go cost you', 'This one na illegal, dem no fit enforce am'. Every explanation field in your JSON must be in Pidgin."
+  : "Write all explanations in clear, simple plain English that any Nigerian can understand.";
     // Show loading
     document.getElementById('analyze-btn').classList.add('hidden');
     document.getElementById('loading-state').classList.remove('hidden');
