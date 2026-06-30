@@ -24,13 +24,13 @@
 <body class="min-h-screen flex flex-col">
 
 <!-- Navigation -->
-<header class="bg-[#0B1B3D] sticky top-0 z-50 h-[72px] flex items-center">
-  <div class="flex justify-between items-center w-full px-8 max-w-[1200px] mx-auto">
-    <a href="index.html" class="text-white font-semibold text-lg">Pocket Legal AI</a>
-    <nav class="hidden md:flex items-center gap-6">
-      <a href="index.html" class="text-white/80 hover:text-white text-sm transition-colors">Home</a>
-      <a href="scanner.html" class="text-white/80 hover:text-white text-sm transition-colors">New Scan</a>
-      <a href="qa.html" class="text-white/80 hover:text-white text-sm transition-colors">Legal Q&A</a>
+<header class="bg-[#0B1B3D] sticky top-0 z-50 h-[64px] md:h-[72px] flex items-center">
+  <div class="flex justify-between items-center w-full px-4 md:px-8 max-w-[1200px] mx-auto">
+    <a href="index.html" class="text-white font-semibold text-base md:text-lg">Pocket Legal AI</a>
+    <nav class="flex items-center gap-2 md:gap-6">
+      <a href="index.html" class="text-white/80 hover:text-white text-xs md:text-sm transition-colors">Home</a>
+      <a href="scanner.html" class="text-white/80 hover:text-white text-xs md:text-sm transition-colors">Scan</a>
+      <a href="qa.html" class="text-white/80 hover:text-white text-xs md:text-sm transition-colors">Q&A</a>
     </nav>
   </div>
 </header>
@@ -41,17 +41,16 @@
   <p class="text-[#4B5563] text-lg">No contract analysis found.</p>
   <a href="scanner.html" class="bg-[#0F5132] text-white px-8 py-3 rounded-[4px] font-semibold hover:opacity-90 transition-all">Scan a Contract</a>
 </div>
-
-<main id="main-content" class="hidden flex-grow max-w-[1200px] mx-auto px-4 md:px-8 py-8 w-full">
+<main id="main-content" class="hidden flex-grow max-w-[1200px] mx-auto px-3 md:px-8 py-4 md:py-8 w-full">
 
   <!-- Page Header -->
-  <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+  <div class="flex flex-col gap-4 mb-6">
     <div>
       <p class="text-xs text-[#4B5563] uppercase tracking-wider mb-1">Analysis Complete</p>
-      <h1 id="doc-title" class="text-[24px] md:text-[28px] font-bold text-[#121c28]">Contract Analysis</h1>
+      <h1 id="doc-title" class="text-[20px] md:text-[28px] font-bold text-[#121c28]">Contract Analysis</h1>
       <p id="doc-summary" class="text-[#4B5563] text-sm mt-1 max-w-xl"></p>
     </div>
-    <div class="flex gap-3">
+    <div class="flex gap-3 flex-wrap">
       <a href="scanner.html" class="border border-[#E2E8F0] bg-white text-[#121c28] px-4 py-2 rounded-[4px] text-sm font-semibold hover:bg-[#f8f9ff] transition-all flex items-center gap-2">
         <span class="material-symbols-outlined text-sm">refresh</span> New Scan
       </a>
@@ -65,7 +64,7 @@
   <div class="flex flex-col md:flex-row gap-0 bg-white border border-[#E2E8F0] overflow-hidden rounded-[4px]">
 
     <!-- Left Column — Summary -->
-    <aside class="w-full md:w-[30%] border-b md:border-b-0 md:border-r border-[#E2E8F0] p-6 flex flex-col gap-6">
+   <aside class="w-full md:w-[30%] border-b md:border-b-0 md:border-r border-[#E2E8F0] p-4 md:p-6 flex flex-col gap-4 md:gap-6">
 
       <div>
         <h2 class="text-lg font-semibold text-[#121c28] mb-1">Document Summary</h2>
@@ -76,7 +75,7 @@
       <div>
         <span class="text-[#4B5563] text-xs font-bold uppercase tracking-wider">Overall Risk Score</span>
         <div class="flex items-baseline gap-2 mt-1">
-          <span id="risk-score-number" class="text-[48px] font-bold leading-none text-[#121c28]">--</span>
+          <span id="risk-score-number" class="text-[36px] md:text-[48px] font-bold leading-none text-[#121c28]">--</span>
           <span class="text-[#4B5563]">/ 100</span>
         </div>
         <div class="w-full h-3 border border-[#E2E8F0] rounded-full mt-2 overflow-hidden bg-[#eef4ff]">
@@ -118,11 +117,10 @@
 
     <!-- Right Column — Clause Breakdown -->
     <section class="w-full md:w-[70%] flex flex-col">
-      <div class="p-6 border-b border-[#E2E8F0]">
-        <h2 class="text-lg font-semibold text-[#121c28]">Clause Breakdown</h2>
+      <div class="p-4 md:p-6 border-b border-[#E2E8F0]">
+        <h2 class="text-base md:text-lg font-semibold text-[#121c28]">Clause Breakdown</h2>
       </div>
-      <div id="clauses-container" class="flex-1 overflow-y-auto max-h-[700px] custom-scrollbar divide-y divide-[#E2E8F0]">
-        <!-- Clauses injected here by JS -->
+      <div id="clauses-container" class="flex-1 overflow-y-auto max-h-none md:max-h-[700px] custom-scrollbar divide-y divide-[#E2E8F0]">
       </div>
     </section>
 
@@ -224,7 +222,7 @@
         : '';
 
       const div = document.createElement('div');
-      div.className = `clause-row p-6 ${bgClass} transition-colors`;
+      div.className = `clause-row p-4 md:p-6 ${bgClass} transition-colors`;
       div.style.animationDelay = `${index * 0.1}s`;
       div.innerHTML = `
         <div class="flex justify-between items-start mb-3">

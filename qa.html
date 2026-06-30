@@ -36,19 +36,19 @@
 </script>
 
 <!-- Navigation -->
-<header class="bg-[#0B1B3D] fixed top-0 left-0 right-0 h-[72px] z-50 flex items-center">
-  <div class="flex justify-between items-center w-full px-8 max-w-[1200px] mx-auto">
-    <a href="index.html" class="text-white font-semibold text-lg">Pocket Legal AI</a>
-    <nav class="hidden md:flex items-center gap-6">
-      <a href="index.html" class="text-white/80 hover:text-white text-sm transition-colors">Home</a>
-      <a href="scanner.html" class="text-white/80 hover:text-white text-sm transition-colors">Scan Contract</a>
-      <span class="text-white text-sm font-semibold border-b-2 border-[#0F5132] pb-1">Legal Q&A</span>
+<header class="bg-[#0B1B3D] fixed top-0 left-0 right-0 h-[64px] md:h-[72px] z-50 flex items-center">
+  <div class="flex justify-between items-center w-full px-4 md:px-8 max-w-[1200px] mx-auto">
+    <a href="index.html" class="text-white font-semibold text-base md:text-lg">Pocket Legal AI</a>
+    <nav class="flex items-center gap-2 md:gap-6">
+      <a href="index.html" class="text-white/80 hover:text-white text-xs md:text-sm transition-colors">Home</a>
+      <a href="scanner.html" class="text-white/80 hover:text-white text-xs md:text-sm transition-colors">Scan</a>
+      <span class="text-white text-xs md:text-sm font-semibold border-b-2 border-[#0F5132] pb-1">Q&A</span>
     </nav>
   </div>
 </header>
 
-<main class="pt-[72px] flex flex-col flex-grow">
-  <div class="max-w-[1200px] mx-auto px-4 md:px-8 w-full py-8 flex flex-col flex-grow">
+<main class="pt-[64px] md:pt-[72px] flex flex-col flex-grow">
+  <div class="max-w-[1200px] mx-auto px-3 md:px-8 w-full py-4 md:py-8 flex flex-col flex-grow">
 
     <!-- Header -->
     <div class="mb-6">
@@ -97,7 +97,7 @@
               <span class="material-symbols-outlined text-[#0B1B3D] text-sm">gavel</span>
               <span class="text-xs font-bold text-[#0B1B3D] uppercase tracking-wider">Pocket Legal AI</span>
             </div>
-            html<p class="text-[#121c28] text-sm leading-relaxed" id="welcome-text">
+            <p class="text-[#121c28] text-sm leading-relaxed" id="welcome-text">
               Hello. I am your Nigerian legal assistant. Ask me anything about your contract, tenancy rights, employment law, or any legal document. I will give you a clear, direct answer grounded in Nigerian law.
             </p>
           </div>
@@ -279,7 +279,7 @@ Rules:
           "X-Title": "Pocket Legal AI"
         },
         body: JSON.stringify({
-          model: "meta-llama/llama-3.3-70b:free",
+          model: "openrouter/free",
           max_tokens: 500,
           messages: [
             { role: "system", content: systemPrompt },
@@ -289,6 +289,9 @@ Rules:
       });
 
       const data = await response.json();
+      if (!response.ok || !data.choices) {
+        throw new Error(data.error?.message || "API returned an unexpected response");
+      }
       const reply = data.choices[0].message.content;
 
       conversationHistory.push({ role: "assistant", content: reply });
@@ -303,7 +306,8 @@ Rules:
 
     } catch (err) {
       removeLoadingMessage();
-      appendAIMessage("Sorry, I could not connect to the legal database. Please check your internet connection and try again.", "");
+      appendAIMessage("Error: " + err.message + ". Check console for details.", "");
+      console.error("Pocket Legal AI error:", err);
     }
   }
 </script>
