@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Saved Documents | Pocket Legal AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+  body { font-family: 'Inter', sans-serif; background-color: #f8f9ff; color: #121c28; }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .doc-card { animation: fadeInUp 0.4s ease forwards; opacity: 0; }
+</style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<!-- Navigation -->
+<header class="bg-[#0B1B3D] sticky top-0 z-50 h-[64px] md:h-[72px] flex items-center">
+  <div class="flex justify-between items-center w-full px-4 md:px-8 max-w-[1200px] mx-auto">
+    <a href="index.html" class="text-white font-semibold text-base md:text-lg">Pocket Legal AI</a>
+    <nav class="flex items-center gap-2 md:gap-6">
+      <a href="index.html" class="text-white/80 hover:text-white text-xs md:text-sm transition-colors">Home</a>
+      <a href="scanner.html" class="text-white/80 hover:text-white text-xs md:text-sm transition-colors">Scan</a>
+      <a href="qa.html" class="text-white/80 hover:text-white text-xs md:text-sm transition-colors">Q&A</a>
+      <span class="text-white text-xs md:text-sm font-semibold border-b-2 border-[#0F5132] pb-1">Saved</span>
+    </nav>
+  </div>
+</header>
+
+<main class="flex-grow max-w-[1200px] mx-auto px-3 md:px-8 py-4 md:py-8 w-full">
+
+  <!-- Page Header -->
+  <div class="mb-6">
+    <h1 class="text-[20px] md:text-[32px] font-bold text-[#121c28] mb-1">Saved Documents</h1>
+    <p class="text-[#4B5563] text-sm md:text-base">All your previously scanned contracts, stored on this device.</p>
+  </div>
+
+  <!-- Search -->
+  <div class="mb-6">
+    <input
+      id="search-input"
+      class="w-full h-11 md:h-12 px-4 bg-white border border-[#E2E8F0] rounded-[4px] focus:outline-none focus:border-[#0B1B3D] text-sm text-[#121c28] placeholder:text-[#707971]"
+      placeholder="Search saved documents..."
+      type="text"
+      oninput="filterDocs()"
+    />
+  </div>
+
+  <!-- Empty State -->
+  <div id="empty-state" class="hidden flex-col items-center justify-center text-center py-16 gap-4">
+    <span class="material-symbols-outlined text-5xl text-[#c0c9c0]">folder_open</span>
+    <p class="text-[#4B5563] text-base">No saved documents yet.</p>
+    <a href="scanner.html" class="bg-[#0F5132] text-white px-6 py-3 rounded-[4px] font-semibold text-sm hover:opacity-90 transition-all">
+      Scan Your First Contract
+    </a>
+  </div>
+
+  <!-- Documents List -->
+  <div id="docs-list" class="flex flex-col gap-3"></div>
+
+</main>
+
+<!-- Footer -->
+<footer class="bg-[#F8FAFC] border-t border-[#E2E8F0] py-6 px-4 md:px-8 mt-auto">
+  <div class="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+    <span class="font-semibold text-[#121c28] text-sm">Pocket Legal AI</span>
+    <p class="text-xs md:text-sm text-[#4B5563]">2026 Pocket Legal AI. Professional legal document analysis for Nigeria.</p>
+    <div class="flex gap-4 md:gap-6 text-xs md:text-sm text-[#4B5563]">
+      <a href="#" class="hover:text-[#121c28]">Terms of Service</a>
+      <a href="#" class="hover:text-[#121c28]">Privacy Policy</a>
+      <a href="#" class="hover:text-[#121c28]">Contact Support</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  let allDocs = [];
+
+  function loadDocs() {
+    const keys = Object.keys(localStorage).filter(k => k.startsWith('pocketlegal_') && k !== 'pocketlegal_latest' && k !== 'pocketlegal_language');
+    allDocs = keys.map(key => {
+      try {
+        const data = JSON.parse(localStorage.getItem(key));
+        return { key, ...data, savedAt: data.savedAt || null };
+      } catch (e) {
+        return null;
+      }
+    }).filter(Boolean);
+
+    // Most recent first if we have timestamps, otherwise reverse insertion order
+    allDocs.reverse();
+    renderDocs(allDocs);
+  }
+
+  function getRiskMeta(score) {
+    if (score >= 75) return { label: 'Low', bg: '#E6F4EA', text: '#137333' };
+    if (score >= 50) return { label: 'Moderate', bg: '#FEF7E0', text: '#B06000' };
+    return { label: 'High', bg: '#FCE8E6', text: '#C5221F' };
+  }
+
+  function renderDocs(docs) {
+    const list = document.getElementById('docs-list');
+    const empty = document.getElementById('empty-state');
+    list.innerHTML = '';
+
+    if (docs.length === 0) {
+      empty.classList.remove('hidden');
+      empty.classList.add('flex');
+      return;
+    }
+    empty.classList.add('hidden');
+    empty.classList.remove('flex');
+
+    docs.forEach((doc, index) => {
+      const score = doc.overall_risk_score || 0;
+      const risk = getRiskMeta(score);
+      const clauseCount = (doc.clauses || []).length;
+
+      const card = document.createElement('div');
+      card.className = 'doc-card bg-white border border-[#E2E8F0] rounded-[4px] p-4 md:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-[#0B1B3D] transition-colors cursor-pointer';
+      card.style.animationDelay = `${index * 0.05}s`;
+      card.onclick = () => openDoc(doc.key);
+
+      card.innerHTML = `
+        <div class="flex items-start gap-3 flex-grow min-w-0">
+          <span class="material-symbols-outlined text-[#0B1B3D] text-2xl mt-0.5 flex-shrink-0">description</span>
+          <div class="min-w-0">
+            <p class="font-semibold text-[#121c28] text-sm md:text-base truncate">${doc.document_title || 'Untitled Document'}</p>
+            <p class="text-[#4B5563] text-xs md:text-sm mt-0.5">${clauseCount} clauses analyzed</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <span class="px-3 py-1 rounded-[4px] text-xs font-semibold" style="background-color:${risk.bg}; color:${risk.text};">
+            ${score}/100 — ${risk.label} Risk
+          </span>
+          <button onclick="event.stopPropagation(); deleteDoc('${doc.key}')" class="text-[#707971] hover:text-[#C5221F] transition-colors">
+            <span class="material-symbols-outlined text-lg">delete</span>
+          </button>
+        </div>
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  function openDoc(key) {
+    const data = localStorage.getItem(key);
+    if (data) {
+      localStorage.setItem('pocketlegal_latest', data);
+      window.location.href = 'result.html';
+    }
+  }
+
+  function deleteDoc(key) {
+    if (confirm('Delete this saved document?')) {
+      localStorage.removeItem(key);
+      loadDocs();
+    }
+  }
+
+  function filterDocs() {
+    const query = document.getElementById('search-input').value.toLowerCase();
+    const filtered = allDocs.filter(doc =>
+      (doc.document_title || '').toLowerCase().includes(query) ||
+      (doc.summary || '').toLowerCase().includes(query)
+    );
+    renderDocs(filtered);
+  }
+
+  document.addEventListener('DOMContentLoaded', loadDocs);
+</script>
+
+</body>
+</html>

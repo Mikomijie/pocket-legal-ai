@@ -40,6 +40,7 @@
       <a href="index.html" class="text-white/80 hover:text-white text-xs md:text-sm transition-colors">Home</a>
       <a href="qa.html" class="text-white/80 hover:text-white text-xs md:text-sm transition-colors">Q&A</a>
       <span class="text-white text-xs md:text-sm font-semibold border-b-2 border-[#0F5132] pb-1">Scan</span>
+    <a href="history.html" class="text-white/80 hover:text-white text-xs md:text-sm transition-colors">Saved</a>
     </nav>
   </div>
 </header>
@@ -319,9 +320,10 @@ if (!jsonMatch) {
 }
 
 const result = JSON.parse(jsonMatch[0]);
-      // Save to localStorage for offline access
-      const cacheKey = "pocketlegal_" + btoa(contractText.substring(0, 100));
-      localStorage.setItem(cacheKey, JSON.stringify(result));
+      // Save to localStorage for offline access and give it unique keys
+      result.savedAt = Date.now();
+const cacheKey = "pocketlegal_" + Date.now();
+localStorage.setItem(cacheKey, JSON.stringify(result));
       localStorage.setItem("pocketlegal_latest", JSON.stringify(result));
       localStorage.setItem("pocketlegal_language", language);
 
