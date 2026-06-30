@@ -256,7 +256,9 @@
     const systemPrompt = `You are a Nigerian legal aid assistant. Your job is to analyze contract documents and protect everyday Nigerians from exploitative legal language.
 
 ${languageInstruction}
+You must always respond with valid JSON only, even for documents that are not contracts. If the document is not a legal contract, still return the JSON structure with a low risk score and explain in the summary that it is not a contract.
 
+Scoring guidance: The overall_risk_score reflects how SAFE the document is, where 100 is completely safe and 0 is extremely dangerous. Calculate it strictly based on clause severity, not clause count. If even one clause is Illegal, the score must not exceed 40. If there are 2 or more Risky clauses with no Illegal clauses, the score must not exceed 60. Only score above 75 if all clauses are Fair. Do not give a high score just because there are few total clauses.
 Analyze the contract text provided and return a JSON object with this exact structure:
 {
   "overall_risk_score": <number from 0 to 100, where 100 is completely safe>,
@@ -306,12 +308,17 @@ Rules:
         throw new Error(data.error?.message || "API request failed");
       }
 
-      let rawText = data.choices[0].message.content;
-      // Strip markdown code fences if present
-      rawText = rawText.replace(/```json|```/g, '').trim();
+     let rawText = data.choices[0].message.content;
+// Strip markdown code fences if present
+rawText = rawText.replace(/```json|```/g, '').trim();
 
-      const result = JSON.parse(rawText);
+// Extract JSON object even if the model added extra text around it
+const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+if (!jsonMatch) {
+  throw new Error("The AI did not return a valid analysis. This usually happens with non-contract documents, or the free model is temporarily overloaded. Please try again, or upload a clearer legal document.");
+}
 
+const result = JSON.parse(jsonMatch[0]);
       // Save to localStorage for offline access
       const cacheKey = "pocketlegal_" + btoa(contractText.substring(0, 100));
       localStorage.setItem(cacheKey, JSON.stringify(result));

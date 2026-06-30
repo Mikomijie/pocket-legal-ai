@@ -147,13 +147,18 @@
 
   // Load contract context from localStorage if available
 const savedResult = localStorage.getItem('pocketlegal_latest');
+const savedLanguage = localStorage.getItem('pocketlegal_language');
 let contractContext = "";
 if (savedResult) {
   const parsed = JSON.parse(savedResult);
   contractContext = `The user has already scanned a contract titled "${parsed.document_title}". Summary: ${parsed.summary}. Overall risk score: ${parsed.overall_risk_score}/100. Clauses found: ${JSON.stringify(parsed.clauses)}`;
   document.getElementById('welcome-text').textContent = `I have loaded your scanned contract: "${parsed.document_title}" with a risk score of ${parsed.overall_risk_score}/100. Ask me anything about it.`;
-}
 
+  if (savedLanguage === 'pidgin') {
+    SELECTED_LANGUAGE.value = 'pidgin';
+    toggleLang('pidgin');
+  }
+}
   function toggleLang(lang) {
     SELECTED_LANGUAGE.value = lang;
     const eng = document.getElementById('lang-english');
@@ -252,8 +257,8 @@ if (savedResult) {
 
     const language = SELECTED_LANGUAGE.value;
     const languageInstruction = language === 'pidgin'
-      ? "Respond in Nigerian Pidgin English."
-      : "Respond in clear, simple plain English.";
+  ? "You MUST respond entirely in Nigerian Pidgin English, exactly how a Lagos street lawyer would explain it to a friend. Do not use formal English at all. Example tone: 'Dem no fit just throw you commot like that, the law no gree.'"
+  : "Respond in clear, simple plain English.";
 
     const systemPrompt = `You are a Nigerian legal aid assistant helping everyday Nigerians understand their legal rights.
 
@@ -265,8 +270,9 @@ Rules:
 - Give direct, actionable answers. Do not hedge excessively.
 - Keep answers concise — maximum 4 sentences for the main answer
 - End with a one-line legal citation in this format: "Reference: [Law Name], [Section]"
-- If you are unsure, say so clearly and recommend consulting a lawyer`;
-
+- If you are unsure, say so clearly and recommend consulting a lawyer
+- Do NOT show your reasoning, thinking process, or internal deliberation. Output ONLY the final answer directly, with no meta-commentary about how you are constructing the response.
+- Never phrase advice as a direct command like "do not sign". Instead, state the risk clearly and let the user decide, e.g. "Signing this would mean you permanently give up X with no compensation, which is a significant risk" rather than "Do not sign this."`;
     conversationHistory.push({ role: "user", content: question });
 
     try {
@@ -292,10 +298,20 @@ Rules:
       if (!response.ok || !data.choices) {
         throw new Error(data.error?.message || "API returned an unexpected response");
       }
-      const reply = data.choices[0].message.content;
+      let reply = data.choices[0].message.content || "";
 
-      conversationHistory.push({ role: "assistant", content: reply });
+if (!reply || reply.trim().length === 0) {
+  throw new Error("The AI gave an empty response. Please try rephrasing your question.");
+}
 
+// Remove leaked reasoning patterns common in free model outputs
+reply = reply.replace(/^(We need to answer|Now final line|Let's craft|Thus|Must be exactly)[\s\S]*?(?=\n\n|\n[A-Z][a-z])/i, '').trim();
+
+if (reply.length < 15 || /^(We |Let's |Must |Now )/i.test(reply)) {
+  reply = "Sorry, I had trouble forming a clear answer. Please try asking again.";
+}
+
+conversationHistory.push({ role: "assistant", content: reply });
       // Extract reference line if present
       const refMatch = reply.match(/Reference:\s*(.+)/i);
       const reference = refMatch ? refMatch[1] : "";
