@@ -19,6 +19,8 @@
     to { opacity: 1; transform: translateY(0); }
   }
   .clause-row { animation: fadeInUp 0.4s ease forwards; opacity: 0; }
+  .options-panel { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+  .options-panel.open { max-height: 500px; }
 </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -31,7 +33,7 @@
       <a href="index.html" class="text-white/80 hover:text-white text-xs md:text-sm transition-colors">Home</a>
       <a href="scanner.html" class="text-white/80 hover:text-white text-xs md:text-sm transition-colors">Scan</a>
       <a href="qa.html" class="text-white/80 hover:text-white text-xs md:text-sm transition-colors">Q&A</a>
-    <a href="history.html" class="text-white/80 hover:text-white text-xs md:text-sm transition-colors">Saved</a>
+      <a href="history.html" class="text-white/80 hover:text-white text-xs md:text-sm transition-colors">Saved</a>
     </nav>
   </div>
 </header>
@@ -42,6 +44,7 @@
   <p class="text-[#4B5563] text-lg">No contract analysis found.</p>
   <a href="scanner.html" class="bg-[#0F5132] text-white px-8 py-3 rounded-[4px] font-semibold hover:opacity-90 transition-all">Scan a Contract</a>
 </div>
+
 <main id="main-content" class="hidden flex-grow max-w-[1200px] mx-auto px-3 md:px-8 py-4 md:py-8 w-full">
 
   <!-- Page Header -->
@@ -65,7 +68,7 @@
   <div class="flex flex-col md:flex-row gap-0 bg-white border border-[#E2E8F0] overflow-hidden rounded-[4px]">
 
     <!-- Left Column — Summary -->
-   <aside class="w-full md:w-[30%] border-b md:border-b-0 md:border-r border-[#E2E8F0] p-4 md:p-6 flex flex-col gap-4 md:gap-6">
+    <aside class="w-full md:w-[30%] border-b md:border-b-0 md:border-r border-[#E2E8F0] p-4 md:p-6 flex flex-col gap-4 md:gap-6">
 
       <div>
         <h2 class="text-lg font-semibold text-[#121c28] mb-1">Document Summary</h2>
@@ -142,6 +145,23 @@
 </footer>
 
 <script>
+  // Static option templates per risk level — no extra AI call needed, instant and reliable
+  const OPTION_TEMPLATES = {
+    Illegal: [
+      { icon: 'forum', title: 'Raise it before signing', text: 'Point out this clause violates Nigerian law and ask for it to be removed or corrected before you sign.' },
+      { icon: 'description', title: 'Get it in writing', text: 'If they agree to remove it, make sure the final signed copy reflects that change, not just a verbal promise.' },
+      { icon: 'support_agent', title: 'Seek free legal aid', text: 'Contact a Citizens Mediation Centre or Legal Aid Council office in your state before signing if you are unsure.' }
+    ],
+    Risky: [
+      { icon: 'handshake', title: 'Negotiate the terms', text: 'Ask whether this clause can be adjusted to something more balanced before you commit.' },
+      { icon: 'visibility', title: 'Proceed with awareness', text: 'If you choose to accept it, keep records and be aware this clause could be used against you later.' },
+      { icon: 'forum', title: 'Ask a follow-up question', text: 'Use the Legal Q&A to ask exactly how this clause could affect you in your specific situation.' }
+    ],
+    Fair: [
+      { icon: 'check_circle', title: 'This looks standard', text: 'This clause follows common practice and does not require special action.' }
+    ]
+  };
+
   document.addEventListener('DOMContentLoaded', () => {
     const raw = localStorage.getItem('pocketlegal_latest');
     const language = localStorage.getItem('pocketlegal_language') || 'english';
@@ -156,20 +176,16 @@
     document.getElementById('main-content').classList.remove('hidden');
     document.getElementById('main-content').classList.add('flex');
 
-    // Populate header
     document.getElementById('doc-title').textContent = data.document_title || 'Contract Analysis';
     document.getElementById('doc-summary').textContent = data.summary || '';
     document.getElementById('sidebar-title').textContent = data.document_title || '';
 
-    // Language badge
     document.getElementById('language-badge').textContent =
       language === 'pidgin' ? 'Analysis Language: Nigerian Pidgin' : 'Analysis Language: Plain English';
 
-    // Risk score
     const score = data.overall_risk_score || 0;
     document.getElementById('risk-score-number').textContent = score;
 
-    // Animate bar after short delay
     setTimeout(() => {
       const bar = document.getElementById('risk-bar');
       bar.style.width = score + '%';
@@ -185,7 +201,6 @@
       }
     }, 300);
 
-    // Count clauses
     const clauses = data.clauses || [];
     const fairCount = clauses.filter(c => c.risk_level === 'Fair').length;
     const riskyCount = clauses.filter(c => c.risk_level === 'Risky').length;
@@ -194,7 +209,6 @@
     document.getElementById('risky-count').textContent = riskyCount;
     document.getElementById('illegal-count').textContent = illegalCount;
 
-    // Render clauses
     const container = document.getElementById('clauses-container');
     clauses.forEach((clause, index) => {
       const isIllegal = clause.risk_level === 'Illegal';
@@ -222,6 +236,43 @@
            </div>`
         : '';
 
+      const feedbackHTML = `
+        <div class="flex items-center justify-between mt-3 pt-3 border-t border-[#E2E8F0]">
+          <span class="text-xs text-[#707971]">Was this analysis helpful?</span>
+          <div class="flex gap-2">
+            <button onclick="submitFeedback(${index}, 'up', this)" class="feedback-btn p-1.5 rounded-[4px] hover:bg-[#E6F4EA] transition-colors" title="Helpful">
+              <span class="material-symbols-outlined text-base text-[#707971]">thumb_up</span>
+            </button>
+            <button onclick="submitFeedback(${index}, 'down', this)" class="feedback-btn p-1.5 rounded-[4px] hover:bg-[#FCE8E6] transition-colors" title="Not helpful">
+              <span class="material-symbols-outlined text-base text-[#707971]">thumb_down</span>
+            </button>
+          </div>
+        </div>
+      `;
+
+      const options = OPTION_TEMPLATES[clause.risk_level] || OPTION_TEMPLATES.Fair;
+      const optionsHTML = options.map(opt => `
+        <div class="flex gap-3 p-3 bg-white border border-[#E2E8F0] rounded-[4px]">
+          <span class="material-symbols-outlined text-[#0B1B3D] text-lg flex-shrink-0">${opt.icon}</span>
+          <div>
+            <p class="font-semibold text-[#121c28] text-xs mb-0.5">${opt.title}</p>
+            <p class="text-[#4B5563] text-xs leading-relaxed">${opt.text}</p>
+          </div>
+        </div>
+      `).join('');
+
+      const optionsButtonHTML = !isFair ? `
+        <button onclick="toggleOptions(${index})" class="mt-3 flex items-center gap-1.5 text-xs font-semibold text-[#0B1B3D] hover:underline">
+          <span class="material-symbols-outlined text-sm">help_outline</span>
+          What are my options?
+        </button>
+        <div id="options-${index}" class="options-panel">
+          <div class="flex flex-col gap-2 mt-3">
+            ${optionsHTML}
+          </div>
+        </div>
+      ` : '';
+
       const div = document.createElement('div');
       div.className = `clause-row p-4 md:p-6 ${bgClass} transition-colors`;
       div.style.animationDelay = `${index * 0.1}s`;
@@ -234,11 +285,36 @@
         <div class="${explanationBg} p-4 rounded-[4px]">
           <p class="text-[#121c28] text-sm"><span class="font-bold">What this means:</span> ${clause.explanation}</p>
           ${citationHTML}
+          ${optionsButtonHTML}
+          ${feedbackHTML}
         </div>
       `;
       container.appendChild(div);
     });
   });
+
+  function toggleOptions(index) {
+    const panel = document.getElementById('options-' + index);
+    panel.classList.toggle('open');
+  }
+
+  function submitFeedback(clauseIndex, type, btnElement) {
+    const allBtns = btnElement.parentElement.querySelectorAll('.feedback-btn');
+    allBtns.forEach(b => b.classList.remove('bg-[#E6F4EA]', 'bg-[#FCE8E6]'));
+
+    if (type === 'up') {
+      btnElement.classList.add('bg-[#E6F4EA]');
+    } else {
+      btnElement.classList.add('bg-[#FCE8E6]');
+    }
+
+    const feedbackKey = 'pocketlegal_feedback';
+    const existing = JSON.parse(localStorage.getItem(feedbackKey) || '[]');
+    existing.push({ clauseIndex, type, timestamp: Date.now() });
+    localStorage.setItem(feedbackKey, JSON.stringify(existing));
+
+    btnElement.title = type === 'up' ? 'Marked helpful' : 'Marked not helpful — thank you for the feedback';
+  }
 </script>
 
 </body>

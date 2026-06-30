@@ -28,7 +28,6 @@
 
 
 <script>
-  const OPENROUTER_API_KEY = "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";
   const SELECTED_LANGUAGE = { value: "english" };
 </script>
 
@@ -126,12 +125,19 @@
         <p id="error-text" class="text-[#C5221F] text-sm font-medium"></p>
       </div>
 
-      <div class="flex gap-2">
-        <span class="material-symbols-outlined text-[18px] text-[#707971] mt-0.5">gavel</span>
-        <p class="text-xs text-[#4B5563] leading-relaxed">
-          <span class="font-bold">Disclaimer:</span> Pocket Legal AI provides legal information, not legal advice. The generated analysis should be used as a reference tool only. We strongly recommend consulting with a qualified legal professional for any official legal proceedings or high-stakes agreements.
-        </p>
-      </div>
+      <div class="p-3 bg-[#FEF7E0] border border-[#B06000] rounded-[4px] flex gap-2">
+  <span class="material-symbols-outlined text-[18px] text-[#B06000] mt-0.5">privacy_tip</span>
+  <p class="text-xs text-[#B06000] leading-relaxed">
+    <span class="font-bold">Privacy notice:</span> Please remove or black out sensitive personal identifiers (BVN, NIN, full bank account numbers, passwords) before scanning. Your document is processed by a third-party AI service to generate this analysis.
+  </p>
+</div>
+
+<div class="flex gap-2">
+  <span class="material-symbols-outlined text-[18px] text-[#707971] mt-0.5">gavel</span>
+  <p class="text-xs text-[#4B5563] leading-relaxed">
+    <span class="font-bold">Disclaimer:</span> Pocket Legal AI provides legal information, not legal advice. The generated analysis should be used as a reference tool only. We strongly recommend consulting with a qualified legal professional for any official legal proceedings or high-stakes agreements.
+  </p>
+</div>
     </div>
 
   </div>
@@ -241,11 +247,6 @@
       return;
     }
 
-    if (OPENROUTER_API_KEY === "your-openrouter-key-here") {
-      showError("Please add your OpenRouter API key in the script section of scanner.html.");
-      return;
-    }
-
     const language = SELECTED_LANGUAGE.value;
     const languageInstruction = language === 'pidgin'
   ? "You MUST write every single explanation in Nigerian Pidgin English. Do not use formal English at all. Write exactly how a Lagos street lawyer would explain it. Examples: 'This clause no good for you at all', 'Oga landlord no fit do this one', 'If you sign this, e go cost you', 'This one na illegal, dem no fit enforce am'. Every explanation field in your JSON must be in Pidgin."
@@ -272,11 +273,11 @@ Analyze the contract text provided and return a JSON object with this exact stru
       "clause_text": "<the original clause text, max 200 chars>",
       "risk_level": "Fair" or "Risky" or "Illegal",
       "explanation": "<plain explanation of what this means for the user>",
-      "legal_citation": "<relevant Nigerian law if Risky or Illegal, empty string if Fair>"
+      "legal_citation": "<relevant Nigerian law if Risky or Illegal, empty string if Fair. Only cite real, specific Nigerian laws: Lagos State Tenancy Law 2011, Labour Act Cap L1 LFN 2004, Companies and Allied Matters Act 2020, Recovery of Premises Act (for Abuja/FCT), or Nigerian Copyright Act. Never invent or cite a generic 'Nigerian Contract Act' since no such single law exists.>"
     }
   ]
 }
-
+Before scoring, specifically check for these critical red-flag patterns and flag them as Illegal if present: self-help eviction or re-entry without court order, lockout or seizure of property without notice, landlord/employer having "final" or "sole discretion" over financial deductions, waiver of statutory notice periods, forfeiture of deposits without itemized justification. Do not miss these even if they appear in the middle of a longer clause.
 Rules:
 - Fair means the clause is standard and acceptable under Nigerian law
 - Risky means the clause is unusual, one-sided, or could harm the user
@@ -285,16 +286,13 @@ Rules:
 - Return ONLY the JSON object, no extra text, no markdown backticks`;
 
     try {
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-          "HTTP-Referer": window.location.href,
-          "X-Title": "Pocket Legal AI"
-        },
-        body: JSON.stringify({
-          model: "openrouter/free",
+      const response = await fetch("/api/analyze", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    model: "openrouter/free",
           max_tokens: 3000,
           messages: [
             { role: "system", content: systemPrompt },
