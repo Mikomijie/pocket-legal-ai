@@ -247,7 +247,7 @@
       return;
     }
 
-    const language = SELECTED_LANGUAGE.value;
+   const language = SELECTED_LANGUAGE.value;
     const languageInstruction = language === 'pidgin'
   ? "You MUST write every single explanation in Nigerian Pidgin English. Do not use formal English at all. Write exactly how a Lagos street lawyer would explain it. Examples: 'This clause no good for you at all', 'Oga landlord no fit do this one', 'If you sign this, e go cost you', 'This one na illegal, dem no fit enforce am'. Every explanation field in your JSON must be in Pidgin."
   : "Write all explanations in clear, simple plain English that any Nigerian can understand.";
@@ -272,7 +272,8 @@ Analyze the contract text provided and return a JSON object with this exact stru
       "clause_title": "<short title for this clause>",
       "clause_text": "<the original clause text, max 200 chars>",
       "risk_level": "Fair" or "Risky" or "Illegal",
-      "explanation": "<plain explanation of what this means for the user>",
+     "explanation": "<plain explanation in English of what this means for the user>",
+      "explanation_pidgin": "<same explanation, in Nigerian Pidgin English>",
       "legal_citation": "<relevant Nigerian law if Risky or Illegal, empty string if Fair. Only cite real, specific Nigerian laws: Lagos State Tenancy Law 2011, Labour Act Cap L1 LFN 2004, Companies and Allied Matters Act 2020, Recovery of Premises Act (for Abuja/FCT), or Nigerian Copyright Act. Never invent or cite a generic 'Nigerian Contract Act' since no such single law exists.>"
     }
   ]

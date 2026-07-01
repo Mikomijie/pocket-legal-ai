@@ -287,7 +287,7 @@
         </div>
         <p class="text-[#27313e] text-sm italic leading-relaxed mb-3">"${clause.clause_text}"</p>
         <div class="${explanationBg} p-4 rounded-[4px]">
-          <p class="text-[#121c28] text-sm"><span class="font-bold">What this means:</span> ${clause.explanation}</p>
+          <p class="text-[#121c28] text-sm"><span class="font-bold">What this means:</span> ${(language === 'pidgin' && clause.explanation_pidgin) ? clause.explanation_pidgin : clause.explanation}</p>
           ${citationHTML}
           ${optionsButtonHTML}
           ${feedbackHTML}
