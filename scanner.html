@@ -331,7 +331,7 @@ localStorage.setItem(cacheKey, JSON.stringify(result));
     } catch (err) {
       document.getElementById('analyze-btn').classList.remove('hidden');
       document.getElementById('loading-state').classList.add('hidden');
-      showError("Analysis failed: " + err.message + ". Please check your API key and try again.");
+      showError("Analysis failed: " + err.message + ". Please try again in a moment.");
     }
   }
 </script>
