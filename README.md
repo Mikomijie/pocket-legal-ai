@@ -20,6 +20,10 @@ A lightweight AI-powered legal assistant built for everyday Nigerians to underst
 2. Open index.html in your browser or use Live Server in VS Code
 3. Add your OpenRouter API key in scanner.html and qa.html
 
+## Live App
+https://pocket-legal-ai.vercel.app/
+
+
 ## Focus Area
 Social Impact & Inclusion — BuildVerse Hackathon 2026
 Team: Pocket Legal AI | Team ID: 017
