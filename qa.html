@@ -306,12 +306,23 @@ if (reply.length < 15 || /^(We |Let's |Must |Now )/i.test(reply)) {
 conversationHistory.push({ role: "assistant", content: reply });
       // Extract reference line if present
       const refMatch = reply.match(/Reference:\s*(.+)/i);
-      const reference = refMatch ? refMatch[1] : "";
+      let reference = refMatch ? refMatch[1] : "";
       const mainText = reply.replace(/Reference:\s*.+/i, '').trim();
+
+      const VALID_CITATIONS = [
+        "Lagos State Tenancy Law 2011",
+        "Labour Act Cap L1",
+        "Companies and Allied Matters Act 2020",
+        "Recovery of Premises Act",
+        "Nigerian Copyright Act"
+      ];
+      const isValid = VALID_CITATIONS.some(law => reference.includes(law));
+      if (reference && !isValid) {
+        reference = "No specific Nigerian statute directly applies here — consult a lawyer for confirmation.";
+      }
 
       removeLoadingMessage();
       appendAIMessage(mainText, reference);
-
     } catch (err) {
       removeLoadingMessage();
       appendAIMessage("Error: " + err.message + ". Check console for details.", "");
