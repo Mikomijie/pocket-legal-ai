@@ -325,15 +325,23 @@
     });
   }
 
-  function submitFeedback(clauseIndex, type, btnElement) {
+ function submitFeedback(clauseIndex, type, btnElement) {
     const allBtns = btnElement.parentElement.querySelectorAll('.feedback-btn');
-    allBtns.forEach(b => b.classList.remove('bg-[#E6F4EA]', 'bg-[#FCE8E6]'));
+    allBtns.forEach(b => {
+      b.classList.remove('bg-[#E6F4EA]', 'bg-[#FCE8E6]');
+      b.style.boxShadow = 'none';
+      b.style.transform = 'scale(1)';
+    });
 
     if (type === 'up') {
       btnElement.classList.add('bg-[#E6F4EA]');
+      btnElement.style.boxShadow = '0 0 0 3px rgba(19, 115, 51, 0.25)';
     } else {
       btnElement.classList.add('bg-[#FCE8E6]');
+      btnElement.style.boxShadow = '0 0 0 3px rgba(197, 34, 31, 0.25)';
     }
+    btnElement.style.transform = 'scale(1.15)';
+    btnElement.style.transition = 'all 0.2s ease';
 
     const feedbackKey = 'pocketlegal_feedback';
     const existing = JSON.parse(localStorage.getItem(feedbackKey) || '[]');

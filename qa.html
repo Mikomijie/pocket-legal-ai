@@ -69,20 +69,7 @@
     </div>
 
     <!-- Suggestion Chips -->
-    <div class="flex flex-wrap gap-3 mb-6">
-      <button onclick="useChip(this)" class="chip px-4 py-2 border border-[#E2E8F0] rounded-[4px] bg-white text-sm text-[#121c28] hover:border-[#0B1B3D] transition-colors text-left">
-        Can my landlord evict me without 1 month notice?
-      </button>
-      <button onclick="useChip(this)" class="chip px-4 py-2 border border-[#E2E8F0] rounded-[4px] bg-white text-sm text-[#121c28] hover:border-[#0B1B3D] transition-colors text-left">
-        Is my employer allowed to withhold my salary?
-      </button>
-      <button onclick="useChip(this)" class="chip px-4 py-2 border border-[#E2E8F0] rounded-[4px] bg-white text-sm text-[#121c28] hover:border-[#0B1B3D] transition-colors text-left">
-        What happens if I break this contract early?
-      </button>
-      <button onclick="useChip(this)" class="chip px-4 py-2 border border-[#E2E8F0] rounded-[4px] bg-white text-sm text-[#121c28] hover:border-[#0B1B3D] transition-colors text-left">
-        Can my oga sack me without notice?
-      </button>
-    </div>
+    <div id="chip-container" class="flex flex-wrap gap-3 mb-6"></div>
 
     <!-- Conversation Window -->
     <div class="border border-[#E2E8F0] bg-white rounded-[4px] flex flex-col flex-grow min-h-[400px] overflow-hidden">
@@ -145,19 +132,39 @@
   const input = document.getElementById('question-input');
   let conversationHistory = [];
 
-  // Load contract context from localStorage if available
+// Load contract context from localStorage if available
 const savedResult = localStorage.getItem('pocketlegal_latest');
 const savedLanguage = localStorage.getItem('pocketlegal_language');
 let contractContext = "";
+const chipContainer = document.getElementById('chip-container');
+const DEFAULT_CHIPS = [
+  "Can my landlord evict me without notice?",
+  "Is my employer allowed to withhold my salary?",
+  "What happens if I break this contract early?",
+  "Is this document legally binding?"
+];
+
+function renderChips(list) {
+  chipContainer.innerHTML = list.map(q => `
+    <button onclick="useChip(this)" class="chip px-4 py-2 border border-[#E2E8F0] rounded-[4px] bg-white text-sm text-[#121c28] hover:border-[#0B1B3D] transition-colors text-left">
+      ${q}
+    </button>
+  `).join('');
+}
+
 if (savedResult) {
   const parsed = JSON.parse(savedResult);
   contractContext = `The user has already scanned a contract titled "${parsed.document_title}". Summary: ${parsed.summary}. Overall risk score: ${parsed.overall_risk_score}/100. Clauses found: ${JSON.stringify(parsed.clauses)}`;
   document.getElementById('welcome-text').textContent = `I have loaded your scanned contract: "${parsed.document_title}" with a risk score of ${parsed.overall_risk_score}/100. Ask me anything about it.`;
 
+  renderChips(parsed.suggested_questions && parsed.suggested_questions.length ? parsed.suggested_questions : DEFAULT_CHIPS);
+
   if (savedLanguage === 'pidgin') {
     SELECTED_LANGUAGE.value = 'pidgin';
     toggleLang('pidgin');
   }
+} else {
+  renderChips(DEFAULT_CHIPS);
 }
   function toggleLang(lang) {
     SELECTED_LANGUAGE.value = lang;
