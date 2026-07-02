@@ -21,7 +21,7 @@ A lightweight AI-powered legal assistant built for everyday Nigerians to underst
 3. Add your OpenRouter API key in scanner.html and qa.html
 
 ## Live App
-https://pocket-legal-ai.vercel.app/ [https://pocket-legal-ai.vercel.app/]
+https://pocket-legal-ai.vercel.app/
 
 
 ## Focus Area
